@@ -50,6 +50,12 @@ echo "$USER_APP_CONTENT" > client/src/App.tsx
 # Update the app name in capacitor.config.ts
 sed -i 's/appName: "Location Tracker"/appName: "Location Tracker - User"/g' capacitor.config.ts
 
+# Initialize Capacitor if not already done
+if [ ! -d "android" ]; then
+  echo "Initializing Capacitor..."
+  node init-capacitor.js
+fi
+
 # Build the app
 echo "Building the app..."
 npm run build
@@ -58,17 +64,17 @@ npm run build
 echo "Syncing with Capacitor..."
 npx cap sync android
 
+# Build the APK directly using Gradle
+echo "Building APK with Gradle..."
+cd android
+./gradlew assembleDebug
+cd ..
+
+echo "User APK build complete!"
+echo "APK is available at: android/app/build/outputs/apk/debug/app-debug.apk"
+
 # Restore original App.tsx
 mv client/src/App.tsx.backup client/src/App.tsx
 
 # Restore original app name
 sed -i 's/appName: "Location Tracker - User"/appName: "Location Tracker"/g' capacitor.config.ts
-
-echo "User APK build preparation complete!"
-echo ""
-echo "To finish building the APK:"
-echo "1. Run: npx cap open android"
-echo "2. In Android Studio, go to Build > Build Bundle(s)/APK(s) > Build APK(s)"
-echo "3. The APK will be in android/app/build/outputs/apk/debug/app-debug.apk"
-echo ""
-echo "After building, rename the APK to 'location-tracker-user.apk' to distinguish it from the admin version."

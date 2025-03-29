@@ -38,21 +38,40 @@ The web application is built using:
 
 ## Building Android APKs
 
-You can build two separate APKs:
+There are two ways to build the APKs:
 
-### User APK (for people being tracked)
+### Automatic Build (both APKs)
+
+To build both APKs at once and place them in the `outputs` folder:
+
+```bash
+./build-apks-to-outputs.sh
+```
+
+This will:
+1. Build the user APK
+2. Build the admin APK
+3. Copy both APKs to the `outputs` folder as:
+   - `user-app-debug.apk`
+   - `admin-app-debug.apk`
+
+### Manual Build (individual APKs)
+
+You can also build each APK separately:
+
+#### User APK (for people being tracked)
 
 ```bash
 ./build-user-apk.sh
 ```
 
-### Admin APK (for viewing all locations)
+#### Admin APK (for viewing all locations)
 
 ```bash
 ./build-admin-apk.sh
 ```
 
-Follow the on-screen instructions to complete the build process in Android Studio.
+The APKs will be built automatically using Gradle, no need to open Android Studio.
 
 ## Server Deployment
 
@@ -67,11 +86,14 @@ For the tracking system to work properly, you need to deploy the server:
 
 ## Available Scripts
 
-- `build-user-apk.sh` - Prepares and builds the user version APK
-- `build-admin-apk.sh` - Prepares and builds the admin version APK
+- `build-apks-to-outputs.sh` - Builds both user and admin APKs and places them in the outputs folder
+- `build-user-apk.sh` - Builds only the user version APK
+- `build-admin-apk.sh` - Builds only the admin version APK
 - `build-android.sh` - Builds the full combined app APK
 - `run-android.sh` - Runs the app on a connected Android device
 - `update-api-url.sh` - Updates the API endpoint URL in the background service
+
+The server URL can also be configured directly in the user app by tapping "Configure Server URL" on the welcome screen.
 
 ## Privacy Notice
 
