@@ -5,6 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import Layout from "@/components/Layout";
 import { apiRequest } from "@/lib/queryClient";
 import { type Location } from "@shared/schema";
+import LocationMap from "@/components/LocationMap";
 
 interface UserLocationData {
   userId: string;
@@ -104,7 +105,7 @@ export default function AdminDashboard() {
         <Tabs defaultValue="users" className="w-full">
           <TabsList className="mb-4">
             <TabsTrigger value="users">Active Users</TabsTrigger>
-            <TabsTrigger value="map" disabled={!selectedUser}>Map View</TabsTrigger>
+            <TabsTrigger value="map">Map View</TabsTrigger>
           </TabsList>
           
           <TabsContent value="users">
@@ -252,13 +253,66 @@ export default function AdminDashboard() {
           <TabsContent value="map">
             <Card>
               <CardHeader>
-                <CardTitle>Location Map</CardTitle>
+                <CardTitle>
+                  {selectedUser 
+                    ? `Live Location Map for User: ${selectedUser.substring(0, 10)}...` 
+                    : "Location Map"}
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-center text-muted-foreground py-10">
-                  To integrate a real map, you would need to use a mapping library like Leaflet, Google Maps, or Mapbox.
-                  For simplicity, we're linking to Google Maps above.
-                </p>
+                {!selectedUser ? (
+                  <div className="text-center py-10">
+                    <p className="text-muted-foreground mb-4">
+                      Please select a user from the "Active Users" tab to view their location on the map.
+                    </p>
+                    <button
+                      onClick={() => document.querySelector('[value="users"]')?.dispatchEvent(new Event('click'))}
+                      className="px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm"
+                    >
+                      Go to Active Users
+                    </button>
+                  </div>
+                ) : !userLocations || userLocations.locations.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-10">
+                    No location data available for this user.
+                  </p>
+                ) : loading ? (
+                  <div className="flex justify-center py-10">
+                    <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent"></div>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-sm font-medium">Live Tracking</h3>
+                        <p className="text-xs text-muted-foreground">
+                          Last updated: {formatTimestamp(userLocations.locations[0].timestamp)}
+                        </p>
+                      </div>
+                      
+                      <div className="flex items-center space-x-2">
+                        <span className="relative flex h-3 w-3">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
+                        </span>
+                        <span className="text-xs font-medium">Live</span>
+                      </div>
+                    </div>
+                    
+                    <LocationMap 
+                      locations={userLocations.locations} 
+                      height="500px" 
+                    />
+                    
+                    <div className="pt-2 text-xs text-muted-foreground">
+                      <p>🔵 Blue marker shows current location with accuracy radius</p>
+                      <p>📍 Other markers show location history</p>
+                      <p className="mt-2 text-xs">
+                        Note: The user is being tracked even if they close the app, as long as they have granted location permissions.
+                      </p>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
