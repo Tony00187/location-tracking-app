@@ -9,6 +9,15 @@ A web-based location tracking application that can be packaged as an Android APK
 - Admin dashboard with map visualization of user location history
 - User permission request handling
 - Works on both web and Android platforms
+- Separate APKs for users and administrators
+
+## Documentation
+
+Detailed guides are available in the `docs` folder:
+
+- [Quick Start Guide](docs/QUICK_START_GUIDE.md) - Simple steps to get everything running
+- [APK Build Guide](docs/APK_BUILD_GUIDE.md) - Instructions for building user and admin APKs
+- [Deployment Guide](docs/DEPLOYMENT_GUIDE.md) - How to deploy your server and configure APKs
 
 ## Web Application
 
@@ -27,52 +36,42 @@ The web application is built using:
 
 2. Access the user app at `/` and the admin dashboard at `/admin`
 
-## Building the Android APK
+## Building Android APKs
 
-To convert the web app into an Android APK that can be distributed:
+You can build two separate APKs:
 
-### Prerequisites
+### User APK (for people being tracked)
 
-- [Android Studio](https://developer.android.com/studio) installed
-- Android SDK set up
-- Java Development Kit (JDK) installed
+```bash
+./build-user-apk.sh
+```
 
-### Build Process
+### Admin APK (for viewing all locations)
 
-1. Run the build script:
-   ```
-   ./build-android.sh
-   ```
+```bash
+./build-admin-apk.sh
+```
 
-2. Open the project in Android Studio:
-   ```
-   npx cap open android
-   ```
+Follow the on-screen instructions to complete the build process in Android Studio.
 
-3. In Android Studio:
-   - Wait for the project to sync and build
-   - Go to Build > Build Bundle(s) / APK(s) > Build APK(s)
-   - The APK will be generated in `android/app/build/outputs/apk/debug/`
+## Server Deployment
 
-4. Alternatively, you can run the app directly on a connected device:
-   ```
-   ./run-android.sh
-   ```
-
-### Distributing the APK
-
-1. Locate the generated APK file at `android/app/build/outputs/apk/debug/app-debug.apk`
-2. Share this APK file with users via email, messaging apps, or a download link
-3. Users need to enable "Install from Unknown Sources" on their Android devices to install the APK
-4. Once installed and permissions granted, the app will track location continuously
-
-## Server Setup for Production
-
-For the admin to track all users, set up the server on a publicly accessible host:
+For the tracking system to work properly, you need to deploy the server:
 
 1. Deploy the application to a hosting service (like Replit Deployments)
-2. Update the server URL in the background location service:
-   - Edit `background/locationService.js` and update the `apiUrl` to point to your deployed server
+2. Update the API URL in the APKs:
+   ```bash
+   ./update-api-url.sh https://your-app-domain.replit.app
+   ```
+3. Rebuild both APKs using the scripts above
+
+## Available Scripts
+
+- `build-user-apk.sh` - Prepares and builds the user version APK
+- `build-admin-apk.sh` - Prepares and builds the admin version APK
+- `build-android.sh` - Builds the full combined app APK
+- `run-android.sh` - Runs the app on a connected Android device
+- `update-api-url.sh` - Updates the API endpoint URL in the background service
 
 ## Privacy Notice
 
