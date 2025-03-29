@@ -1,6 +1,26 @@
 import { useState, useEffect, useCallback } from "react";
 import { apiRequest } from "@/lib/queryClient";
 
+// Check if Capacitor is available (when running as native app)
+const isCapacitorAvailable = () => {
+  return typeof (window as any).Capacitor !== 'undefined';
+};
+
+// Dynamically import Capacitor plugins when available
+let Geolocation: any = null;
+let BackgroundRunner: any = null;
+
+// Only import and use Capacitor in a browser environment
+if (typeof window !== 'undefined' && isCapacitorAvailable()) {
+  import('@capacitor/geolocation').then(module => {
+    Geolocation = module.Geolocation;
+  });
+  
+  import('@capacitor/background-runner').then(module => {
+    BackgroundRunner = module.BackgroundRunner;
+  });
+}
+
 interface LocationData {
   latitude: number;
   longitude: number;
@@ -69,6 +89,55 @@ export default function useLocationTracking(): UseLocationTrackingResult {
 
   // Start tracking location
   const startTracking = useCallback(() => {
+    // Use Capacitor Geolocation if available
+    if (isCapacitorAvailable() && Geolocation) {
+      console.log('Using Capacitor Geolocation for tracking');
+      
+      // Set up background tracking using the BackgroundRunner
+      if (BackgroundRunner) {
+        try {
+          // Check if background runner is available
+          BackgroundRunner.isAvailable().then((result: { available: boolean }) => {
+            if (result.available) {
+              console.log('Starting background location tracking');
+              // Start the background runner
+              BackgroundRunner.startTask({ 
+                taskId: 'location-tracking',
+                event: 'tracking'
+              });
+            } else {
+              console.log('Background runner not available, using regular tracking');
+            }
+          });
+        } catch (error) {
+          console.error('Error setting up background tracking:', error);
+        }
+      }
+      
+      // Also track in foreground while app is open
+      Geolocation.watchPosition({
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 0
+      }, (position: any) => {
+        const geoPosition = {
+          coords: {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            accuracy: position.coords.accuracy
+          },
+          timestamp: position.timestamp
+        };
+        updateLocation(geoPosition as GeolocationPosition);
+      });
+      
+      setIsTracking(true);
+      setError(null);
+      
+      return;
+    }
+    
+    // Fallback to browser geolocation
     if (!navigator.geolocation) {
       setError(new GeolocationPositionError());
       return;
@@ -99,16 +168,80 @@ export default function useLocationTracking(): UseLocationTrackingResult {
 
   // Stop tracking location
   const stopTracking = useCallback(() => {
+    // Stop tracking with Capacitor if available
+    if (isCapacitorAvailable()) {
+      if (BackgroundRunner) {
+        try {
+          // Stop the background tracker
+          BackgroundRunner.stopTask({ taskId: 'location-tracking' });
+        } catch (error) {
+          console.error('Error stopping background tracking:', error);
+        }
+      }
+      
+      if (Geolocation) {
+        try {
+          // No direct way to clear watch in Capacitor, but we can stop tracking
+          console.log('Stopping Capacitor location tracking');
+        } catch (error) {
+          console.error('Error stopping Capacitor tracking:', error);
+        }
+      }
+    }
+    
+    // Also clear browser tracking if active
     if (watchId !== null) {
       navigator.geolocation.clearWatch(watchId);
       setWatchId(null);
-      setIsTracking(false);
     }
+    
+    setIsTracking(false);
   }, [watchId]);
 
   // Request permission to use geolocation
   const requestPermission = useCallback((): Promise<boolean> => {
     return new Promise((resolve) => {
+      // Use Capacitor Geolocation if available
+      if (isCapacitorAvailable() && Geolocation) {
+        console.log('Requesting Capacitor location permissions');
+        Geolocation.requestPermissions()
+          .then((permissionResult: any) => {
+            console.log('Permission result:', permissionResult);
+            if (permissionResult.location === 'granted') {
+              // Get current position
+              Geolocation.getCurrentPosition({
+                enableHighAccuracy: true,
+                timeout: 5000,
+                maximumAge: 0
+              }).then((position: any) => {
+                const geoPosition = {
+                  coords: {
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude,
+                    accuracy: position.coords.accuracy
+                  },
+                  timestamp: position.timestamp
+                };
+                updateLocation(geoPosition as GeolocationPosition);
+                resolve(true);
+              }).catch((err: any) => {
+                console.error('Error getting location:', err);
+                setError(err);
+                resolve(false);
+              });
+            } else {
+              resolve(false);
+            }
+          })
+          .catch((err: any) => {
+            console.error('Error requesting permissions:', err);
+            setError(err);
+            resolve(false);
+          });
+        return;
+      }
+      
+      // Fallback to browser geolocation
       if (!navigator.geolocation) {
         setError(new GeolocationPositionError());
         resolve(false);
