@@ -9,16 +9,21 @@ const config: CapacitorConfig = {
   },
   plugins: {
     Geolocation: {
-      // Geolocation permissions
+      // Geolocation permissions for background access
       permissions: {
-        "android": ["android.permission.ACCESS_COARSE_LOCATION", "android.permission.ACCESS_FINE_LOCATION"]
+        "android": [
+          "android.permission.ACCESS_COARSE_LOCATION", 
+          "android.permission.ACCESS_FINE_LOCATION",
+          "android.permission.ACCESS_BACKGROUND_LOCATION"
+        ]
       }
     },
     BackgroundRunner: {
       label: 'com.locationtracker.locationservice',
       src: 'background/locationService.js',
       event: 'tracking',
-      interval: 300000, // Every 5 minutes
+      repeat: true,
+      interval: 120000, // Every 2 minutes for more frequent updates
       autoStart: true
     }
   },

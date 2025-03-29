@@ -19,7 +19,7 @@ fi
 echo "Updating API URL to $API_URL..."
 
 # Update the URL in the background location service
-sed -i "s|const apiUrl = 'https://your-app-domain.replit.app/api/location';|const apiUrl = '$API_URL/api/location';|g" background/locationService.js
+sed -i "s|const apiUrl = storedApiUrl || 'https://your-app-domain.replit.app/api/location';|const apiUrl = storedApiUrl || '$API_URL/api/location';|g" background/locationService.js
 
 echo "API URL updated successfully!"
 echo "Remember to rebuild the Android app after making this change:"

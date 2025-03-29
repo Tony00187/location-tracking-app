@@ -102,7 +102,9 @@ export async function trackingHandler() {
 // Send location data to the server
 async function sendLocationToServer(locationData) {
   try {
-    const apiUrl = 'https://your-app-domain.replit.app/api/location';
+    // Get the API URL from storage or use the default
+    const storedApiUrl = await getValue('apiUrl');
+    const apiUrl = storedApiUrl || 'https://your-app-domain.replit.app/api/location';
     
     const response = await fetch(apiUrl, {
       method: 'POST',

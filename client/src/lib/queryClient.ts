@@ -12,6 +12,18 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
+  // Check if URL is relative to the API path
+  if (url.startsWith('/api/') || url === '/api') {
+    // Get custom API URL if available
+    const customApiUrl = localStorage.getItem('apiUrl');
+    
+    if (customApiUrl) {
+      // Replace the /api prefix with the custom domain
+      const apiBase = customApiUrl.endsWith('/') ? customApiUrl.slice(0, -1) : customApiUrl;
+      url = url.replace('/api', apiBase);
+    }
+  }
+  
   const res = await fetch(url, {
     method,
     headers: data ? { "Content-Type": "application/json" } : {},
