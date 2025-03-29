@@ -24,15 +24,30 @@ export default function useLocationTracking(): UseLocationTrackingResult {
   const [error, setError] = useState<GeolocationPositionError | null>(null);
   const [watchId, setWatchId] = useState<number | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string>("Never");
+  const [userId] = useState<string>(() => {
+    // Get the user ID from localStorage or generate a new one
+    const storedUserId = localStorage.getItem("userId");
+    if (storedUserId) {
+      return storedUserId;
+    }
+    
+    // Generate a new UUID
+    const newUserId = crypto.randomUUID();
+    localStorage.setItem("userId", newUserId);
+    return newUserId;
+  });
 
   // Send location data to the server
   const sendLocationToServer = useCallback(async (locationData: LocationData) => {
     try {
-      await apiRequest("POST", "/api/location", locationData);
+      await apiRequest("POST", "/api/location", {
+        ...locationData,
+        userId
+      });
     } catch (err) {
       console.error("Failed to send location data to server:", err);
     }
-  }, []);
+  }, [userId]);
 
   // Update location data and timestamp
   const updateLocation = useCallback((position: GeolocationPosition) => {

@@ -69,6 +69,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Error fetching location data" });
     }
   });
+  
+  // Get all active users with location data - for admin dashboard
+  app.get("/api/users/active", async (req, res) => {
+    try {
+      // Get unique users who have location data
+      const activeUsers = await storage.getActiveUsers();
+      res.status(200).json({
+        users: activeUsers
+      });
+    } catch (error) {
+      console.error("Error fetching active users:", error);
+      res.status(500).json({ message: "Error fetching active users" });
+    }
+  });
 
   const httpServer = createServer(app);
 

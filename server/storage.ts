@@ -16,6 +16,7 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   saveLocation(location: InsertLocation): Promise<Location>;
   getLocations(userId: string, limit?: number): Promise<Location[]>;
+  getActiveUsers(): Promise<string[]>; // Get a list of active user IDs
 }
 
 export class MemStorage implements IStorage {
@@ -64,6 +65,16 @@ export class MemStorage implements IStorage {
       .filter(location => location.userId === userId)
       .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
       .slice(0, limit);
+  }
+  
+  async getActiveUsers(): Promise<string[]> {
+    // Get unique user IDs from location data
+    const userIds = new Set<string>();
+    Array.from(this.locations.values()).forEach(location => {
+      userIds.add(location.userId);
+    });
+    
+    return Array.from(userIds);
   }
 }
 

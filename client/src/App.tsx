@@ -8,6 +8,7 @@ import WelcomeScreen from "@/pages/WelcomeScreen";
 import PermissionScreen from "@/pages/PermissionScreen";
 import SuccessScreen from "@/pages/SuccessScreen";
 import ErrorScreen from "@/pages/ErrorScreen";
+import AdminDashboard from "@/pages/AdminDashboard";
 
 function Router() {
   const [location] = useLocation();
@@ -55,6 +56,7 @@ function Router() {
       <Route path="/permission" component={PermissionScreen} />
       <Route path="/success" component={SuccessScreen} />
       <Route path="/error" component={ErrorScreen} />
+      <Route path="/admin" component={AdminDashboard} />
       <Route component={NotFound} />
     </Switch>
   );
